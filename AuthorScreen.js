@@ -20,7 +20,7 @@ const AuthorScreen = ({ route }) => {
         setArtistData(response.data);
 
         const artworksResponse = await axios.get(
-          `https://api.artic.edu/api/v1/artworks/search?${response.data.title}&limit=20&fields=image_id,id,artist_id`
+          `https://api.artic.edu/api/v1/artworks/search?${response.data.data.title}&limit=20&fields=image_id,id,artist_id`
         );
         setArtworks(artworksResponse.data.data);
         navigation.setOptions({
@@ -56,7 +56,6 @@ const AuthorScreen = ({ route }) => {
       <Text style={styles.description}>
         {artistData.data.description && `Description: ${artistData.data.description}`}
       </Text>
-      {console.log(authorId, artworks)}
       <FlatList
         data={artworks}
         keyExtractor={(item) => item.image_id.toString()}

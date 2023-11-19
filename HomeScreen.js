@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableWithoutFeedback, Image } from 'react-native';
 import Popup from './MainPopUp';
 import { saveLikedItems, loadLikedItems } from './SaveLoadFile';
 import axios from 'axios';
 import { useIsFocused } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
-import 'react-native-gesture-handler';
-import { PinchGestureHandler} from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
+import ZoomImage from './ZoomableModal';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
   const [paintings, setPaintings] = useState([]);
-  const [page, setPage] = useState(9);
-  const scale = new Animated.Value(1);
-  const [lastImgClicked, setLastImgClicked] = useState(105282);
+  const [page, setPage] = useState(3);
+  const [lastImgClicked, setLastImgClicked] = useState();
   const [modalVisible, setModalVisible] = useState(false);
   const [likedItems, setLikedItems] = useState([]);
   const isFocused = useIsFocused();
+  const [imageZoom, setimageZoom] = useState(false)
+  const navigation = useNavigation();
   
 
   useEffect(() => {
@@ -45,26 +45,19 @@ const HomeScreen = () => {
 
   const RenderIt = ({ item }) => {
     const isLiked = likedItems.includes(item.id);
-    const onPinchEvent = Animated.event([{ nativeEvent: { scale } }], { useNativeDriver: false });
     return (
       item.image_id && (
         <TouchableWithoutFeedback onPress={() => { setModalVisible(true); setLastImgClicked(item.id); }}>
           <View style={styles.imageContainer}>
             <Text style={styles.titles}>{item.title}</Text>
-            <Animated.Image
+            <Image
               style={styles.image}
-              source={{ uri: `https://www.artic.edu/iiif/2/${item.image_id}/full/400,/0/default.jpg` }}
+              source={{ uri: `https://www.artic.edu/iiif/2/${item.image_id}/full/400,/0/default.jpg`}}
             />
             <View style={styles.ButtonsContainer}>
-              <TouchableWithoutFeedback onPress={() => likeButtonPress(item.id)}><Text style={[styles.button, { backgroundColor: isLiked ? '#ccffcc' :'#ffcccb'  }]}>Like</Text></TouchableWithoutFeedback>
-              <TouchableWithoutFeedback onPress={() => console.log(likedItems)} ><Text style={styles.button}>Details</Text></TouchableWithoutFeedback>
-              <TouchableWithoutFeedback ><Text style={styles.button}><FontAwesome name="search-plus" color={'#000'} size={20}/>
-              <PinchGestureHandler onGestureEvent={onPinchEvent} >
-               <Animated.Image source={{ uri: `https://www.artic.edu/iiif/2/${item.image_id}/full/400,/0/default.jpg` }}
-               style={[styles.fullscreenImage, 
-               { transform: [{ scale }] }]} 
-               resizeMode="contain"/>
-               </PinchGestureHandler></Text></TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={() => likeButtonPress(item.id)}><Text style={[styles.button, { color: isLiked ? '#f44' :'#000'  }]}><FontAwesome name="heart" size={30} /></Text></TouchableWithoutFeedback>
+              {item.longitude&&(<TouchableWithoutFeedback onPress={() => navigation.navigate('Map', {longitude:item.longitude, latitude:item.latitude, title:item.title})} ><Text style={styles.button}><FontAwesome name="map" color={'#000'} size={30}/></Text></TouchableWithoutFeedback>)}
+              {item.is_zoomable&&(<TouchableWithoutFeedback ><Text style={styles.button}><FontAwesome name="search-plus" color={'#000'} size={30} onPress={()=>[setLastImgClicked(item.id),setimageZoom(true)]}/> </Text></TouchableWithoutFeedback>)}
             </View>
           </View>
         </TouchableWithoutFeedback>)
@@ -77,7 +70,7 @@ const HomeScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`https://api.artic.edu/api/v1/artworks?limit=20&page=${page}&fields=title,id,alt_text,description,date_start,date_end,artist_display,is_zoomable,image_id,artist_id,style_title,image_id`);
+      const response = await axios.get(`https://api.artic.edu/api/v1/artworks?limit=30&page=${page}&fields=title,id,alt_text,description,date_start,date_end,artist_display,is_zoomable,image_id,artist_id,style_title,image_id,latitude,longitude`);
       setPaintings((prevPaintings) => [...prevPaintings, ...response.data.data]);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -87,11 +80,11 @@ const HomeScreen = () => {
   useEffect(() => {
     fetchData();
   }, [page, isFocused]);
-  return (
+  return ( 
     <View style={styles.container}>
       <FlatList
         data={paintings}
-        keyExtractor={(item) => item.image_id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={RenderIt}
         onEndReached={handleEndReached}
         onEndReachedThreshold={4}
@@ -99,6 +92,7 @@ const HomeScreen = () => {
         showsVerticalScrollIndicator={false}
       />
       <Popup modalVisible={modalVisible} toggleModal={() => setModalVisible(false)} data={paintings.find(item => item.id === lastImgClicked)} />
+      <ZoomImage modalVisible={imageZoom} toggleModal={()=> setimageZoom(false) } data={paintings.find(item => item.id === lastImgClicked)} />
     </View>
   );
 };
@@ -135,12 +129,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   button: {
+    marginBottom:8,
     textAlign: 'center',
     flex: 1,
-  },
-  fullscreenImage: {
-    width: '100%',
-    height: '100%',
   },
 });
 

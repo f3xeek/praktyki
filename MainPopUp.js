@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Modal, StyleSheet, Text, Pressable, View } from 'react-native';
 import HTML from 'react-native-render-html';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +33,7 @@ const Popup = ({ modalVisible, toggleModal, data }) => {
                 </>
               )}
               {data.artist_display && (
-                <Text style={styles.modalText} onPress={() => { navigation.navigate('Author', {authorId:data.artist_id}); toggleModal(false); }}>
+                <Text style={[styles.modalText, styles.hyperlink]} onPress={() => { navigation.navigate('Author', {authorId:data.artist_id}); toggleModal(false); }}>
                   Artist: {data.artist_display}
                 </Text>
               )}
@@ -99,6 +99,9 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
   },
+  hyperlink:{
+    textDecorationLine: 'underline',
+  }
 });
 
 const linkStyles = {

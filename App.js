@@ -7,6 +7,7 @@ import HomeScreen from './HomeScreen';
 import SearchScreen from './SearchScreen';
 import LikedScreen from './LikedScreen';
 import AuthorScreen from './AuthorScreen';
+import Map from './Map';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -16,6 +17,7 @@ const HomeStack = () => {
     <Stack.Navigator >
       <Stack.Screen name="Home" component={HomeScreen} options={{headerShown:false}}/>
       <Stack.Screen name="Author" component={AuthorScreen}/>
+      <Stack.Screen name="Map" component={Map}/>
     </Stack.Navigator>
   );
 };
