@@ -1,20 +1,42 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { FontAwesome } from '@expo/vector-icons';
+import HomeScreen from './HomeScreen';
+import SearchScreen from './SearchScreen';
+import LikedScreen from './LikedScreen';
+import AuthorScreen from './AuthorScreen';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const HomeStack = () => {
+  return (
+    <Stack.Navigator >
+      <Stack.Screen name="Home" component={HomeScreen} options={{headerShown:false}}/>
+      <Stack.Screen name="Author" component={AuthorScreen}/>
+    </Stack.Navigator>
+  );
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
+        <Tab.Screen name="Explore" component={HomeStack} options={{tabBarIcon: ({ color, size }) => (
+              <FontAwesome name={'home'} size={size+8} color={color} />
+            ),
+          }}/>
+        <Tab.Screen name="Search" component={SearchScreen} options={{tabBarIcon: ({ color, size }) => (
+              <FontAwesome name={'search'} size={size} color={color} />
+            ),
+          }}/>        
+          <Tab.Screen name="Liked" component={LikedScreen} options={{tabBarIcon: ({ color, size }) => (
+            <FontAwesome name={'heart'} size={size} color={color} />
+          ),
+        }}/>
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
